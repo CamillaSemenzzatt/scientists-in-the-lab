@@ -58,3 +58,28 @@ if response.status_code == 200:
     plt.show()
 else:
     print("Não foi possível acessar o arquivo CSV.")
+
+
+# Calculando a variância da coluna 'valor'
+variancia = df['valor'].var()
+print(f"Variância: {variancia:.2f}")
+
+# Calculando o desvio padrão da coluna 'valor'
+desvio_padrao = df['valor'].std()
+print(f"Desvio Padrão: {desvio_padrao:.2f}")
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Plotando o histograma da coluna 'valor'
+plt.figure(figsize=(8, 6))
+sns.histplot(df['valor'], bins=20, kde=True)
+plt.xlabel('Valor')
+plt.ylabel('Frequência')
+plt.title('Distribuição dos Valores')
+plt.show()
+
+# Contando a quantidade de NaNs na coluna 'valor'
+quantidade_nans = df['valor'].isna().sum()
+print(f"Quantidade de NaNs: {quantidade_nans}")
+
