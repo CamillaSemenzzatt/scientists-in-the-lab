@@ -1,0 +1,60 @@
+import requests
+import matplotlib.pyplot as plt
+from io import StringIO
+import pandas as pd
+
+# Endereço do URL do arquivo CSV
+url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.25223/dados?formato=csv&dataInicial=01/01/2010&dataFinal=01/01/2020"
+
+# Fazendo a requisição para o arquivo CSV
+response = requests.get(url)
+
+# Verificando se a requisição foi bem sucedida
+if response.status_code == 200:
+    # Decodificação de bytes em string através da codificação UTF-8
+    data = response.content.decode('utf-8')
+
+    # Lendo CSV removendo as aspas e usando ';' como separador
+    df = pd.read_csv(StringIO(data), sep=';', quotechar='"')
+
+    # Separando a coluna 'data' em 'ano'
+    df['Ano'] = pd.to_datetime(df['data']).dt.year
+
+    # Mantendo a coluna de valores como 'total'
+    df_values = df[['Ano', 'valor']]
+
+    # Calculando o valor máximo e mínimo
+    max_valor = df_values['valor'].max()
+    min_valor = df_values['valor'].min()
+
+    # Encontrando os índices dos valores máximo e mínimo
+    idx_max = df_values[df_values['valor'] == max_valor].index[0]
+    idx_min = df_values[df_values['valor'] == min_valor].index[0]
+
+    # Obtendo os anos para os índices
+    anos = df_values['Ano'].unique()
+
+    # Plotando um gráfico linear com outliers
+    plt.figure(figsize=(10, 6))
+    plt.plot(anos, df_values.groupby('Ano')['valor'].mean(), marker='o', color='red', linestyle='-')
+    plt.scatter(anos[idx_max], max_valor, color='red', s=200, label='Máximo', zorder=3)
+    plt.scatter(anos[idx_min], min_valor, color='black', s=200, label='Mínimo', zorder=3)
+    
+    # Calculando as coordenadas dos pontos máximos e mínimos para a linha linear
+    x_maximos = [anos[idx_max]] * len(anos)
+    y_maximos = [max_valor] * len(anos)
+    x_minimos = [anos[idx_min]] * len(anos)
+    y_minimos = [min_valor] * len(anos)
+
+    # Plotando a linha linear conectando os pontos máximos e mínimos
+    plt.plot(x_maximos + x_minimos, y_maximos + y_minimos, color='black', linestyle='-', marker='o')
+
+    plt.title('Estatística de Uso de Cartão de Crédito')
+    plt.xlabel('Ano')
+    plt.ylabel('Qtd')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+else:
+    print("Não foi possível acessar o arquivo CSV.")
