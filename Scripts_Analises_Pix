@@ -1,0 +1,35 @@
+import pandas as pd
+import requests
+import matplotlib.pyplot as plt
+from io import StringIO
+
+url = "https://olinda.bcb.gov.br/olinda/servico/Pix_DadosAbertos/versao/v1/odata/TransacoesPixPorMunicipio(DataBase=@DataBase)?@DataBase=''&$top=10000&$format=text/csv&$select=AnoMes,Municipio,Estado,Regiao,QT_PagadorPF,VL_PagadorPJ,QT_PagadorPJ,VL_RecebedorPF,QT_RecebedorPF,VL_RecebedorPJ,QT_RecebedorPJ"
+
+response = requests.get(url)
+
+if response.status_code == 200:
+    # Decodificação de bytes em string através da codificação UTF-8
+    data = response.content.decode('utf-8')
+    df = pd.read_csv(StringIO(data))
+
+    df['AnoMes'] = pd.to_datetime(df['AnoMes'], format='%Y%m')
+
+    df['Ano'] = df['AnoMes'].dt.year
+
+    contagem_por_ano = df.groupby('Ano').size()
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(contagem_por_ano.index, contagem_por_ano.values, marker='o', color='skyblue', linestyle='-')
+
+    plt.plot(contagem_por_ano.idxmax(), contagem_por_ano.max(), marker='o', markersize=10, color='red', label='Máximo')
+    plt.plot(contagem_por_ano.idxmin(), contagem_por_ano.min(), marker='o', markersize=10, color='green', label='Mínimo')
+    
+    plt.title('Contagem de Transações Pix por Ano')
+    plt.xlabel('Ano')
+    plt.ylabel('Contagem de Transações')
+    plt.xticks(contagem_por_ano.index)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+else:
+    print("Não foi possível acessar o arquivo CSV.")
