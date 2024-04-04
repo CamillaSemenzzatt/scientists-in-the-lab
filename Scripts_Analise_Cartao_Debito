@@ -1,0 +1,48 @@
+import requests
+import matplotlib.pyplot as plt
+from io import StringIO
+import pandas as pd
+
+url = "https://api.bcb.gov.br/dados/serie/bcdata.sgs.25224/dados?formato=csv"
+
+response = requests.get(url)
+
+if response.status_code == 200:
+
+    data = response.content.decode('utf-8')
+
+    df = pd.read_csv(StringIO(data), sep=';', quotechar='"')
+
+    df['Ano'] = pd.to_datetime(df['data']).dt.year
+
+    df_values = df[['Ano', 'valor']]
+
+    max_valor = df_values['valor'].max()
+    min_valor = df_values['valor'].min()
+
+    idx_max = df_values[df_values['valor'] == max_valor].index[0]
+    idx_min = df_values[df_values['valor'] == min_valor].index[0]
+
+    anos = df_values['Ano'].unique()
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(anos, df_values.groupby('Ano')['valor'].mean(), marker='o', color='red', linestyle='-')
+    plt.scatter(anos[idx_max], max_valor, color='red', s=200, label='Máximo', zorder=3)
+    plt.scatter(anos[idx_min], min_valor, color='black', s=200, label='Mínimo', zorder=3)
+    
+    x_maximos = [anos[idx_max]] * len(anos)
+    y_maximos = [max_valor] * len(anos)
+    x_minimos = [anos[idx_min]] * len(anos)
+    y_minimos = [min_valor] * len(anos)
+
+    plt.plot(x_maximos + x_minimos, y_maximos + y_minimos, color='black', linestyle='-', marker='o')
+
+    plt.title('Estatística de Uso de Cartão de Débito
+    plt.xlabel('Ano')
+    plt.ylabel('Qtd')
+    plt.xticks(rotation=45)
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+else:
+    print("Não foi possível acessar o arquivo CSV.")
