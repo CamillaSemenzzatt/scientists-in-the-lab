@@ -1,0 +1,74 @@
+IMPORTANDO BIBLIOTECAS EXPLORATÓRIAS DO PYTHON
+"""
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import datetime
+import matplotlib.dates as mdates
+import seaborn as sns
+
+## Lendo a Base de Dados
+
+"""Fonte do Dado:https://olinda.bcb.gov.br/olinda/servico/MPV_DadosAbertos/versao/v1/aplicacao#!/recursos/Quantidadeetransacoesdecartoes#eyJmb3JtdWxhcmlvIjp7IiRmb3JtYXQiOiJ0ZXh0L2NzdiIsIiR0b3AiOjEwMCwiBDAEIjoiMjAxODEifSwicHJvcHJpZWRhZGVzIjpbMCwxLDIsMyw0LDUsNiw3LDgsOV0sInBlc3F1aXNhZG8iOnRydWUsImFjdGl2ZVRhYiI6InRhYmxlIiwiZ3JpZFN0YXRlIjp7AzADOlt7A0IDIgQwBCIsA0EDfSx7A0IDIgQxBCIsA0EDfSx7A0IDIgQyBCIsA0EDfSx7A0IDIgQzBCIsA0EDfSx7A0IDIgQ0BCIsA0EDfSx7A0IDIgQ1BCIsA0EDfSx7A0IDIgQ2BCIsA0EDfSx7A0IDIgQ3BCIsA0EDfSx7A0IDIgQ4BCIsA0EDfSx7A0IDIgQ5BCIsA0EDfV0sAzEDOnt9LAMyAzpbXSwDMwM6e30sAzQDOnt9LAM1Azp7fX0sInBpdm90T3B0aW9ucyI6ewNhAzp7fSwDYgM6W10sA2MDOjUwMCwDZAM6W10sA2UDOltdLANmAzpbXSwDZwM6ImtleV9hX3RvX3oiLANoAzoia2V5X2FfdG9feiIsA2kDOnt9LANqAzp7fSwDawM6ODUsA2wDOmZhbHNlLANtAzp7fSwDbgM6e30sA28DOiJDb250YWdlbSIsA3ADOiJUYWJsZSJ9fQ=="""
+
+dados_cartoes= pd.read_csv('/content/Estoque.csv', sep=';')
+
+dados=dados_cartoes.drop(columns=['Unnamed: 10','Unnamed: 11'] )
+
+dados.head()
+
+dados.columns
+
+dados.dtypes
+
+dados.shape
+
+dados.nunique()
+
+dados.duplicated().sum()
+
+dados.info()
+
+dados.describe()
+
+## Exporando os tipos de Bandeiras dos Cartões de Crédito
+
+dados.nomeBandeira.unique()
+
+dados.hist(figsize=(16, 20), bins=50, xlabelsize=8, ylabelsize=8);
+
+# Histograma
+fig = plt.figure(figsize = (6,4))
+title = fig.suptitle("Qtde Transações Nacionais", fontsize=14)
+fig.subplots_adjust(top=0.85, wspace=0.3)
+
+ax = fig.add_subplot(1,1, 1)
+ax.set_xlabel("Qtde Transações Nacionais")
+ax.set_ylabel("Frequency")
+ax.text(1.2, 800, r'$\mu$='+str(round(dados['qtdTransacoesNacionais'].mean(),2)),
+         fontsize=12)
+freq, bins, patches = ax.hist(dados['qtdTransacoesNacionais'], color='steelblue', bins=15,
+                                    edgecolor='black', linewidth=1)
+
+fig = plt.figure(figsize = (6, 4))
+title = fig.suptitle("Qtde Transações Nacionais", fontsize=14)
+fig.subplots_adjust(top=0.85, wspace=0.3)
+
+ax1 = fig.add_subplot(1,1, 1)
+ax1.set_xlabel("Qtde Transações Nacionais")
+ax1.set_ylabel("Frequency")
+sns.kdeplot(dados['qtdTransacoesNacionais'], ax=ax1, shade=True, color='steelblue')
+
+##Separando por Tipo de Bandeira
+
+dados['nomeBandeira'].value_counts().sort_index()
+
+# Box Plots
+f, (ax) = plt.subplots(1, 1, figsize=(12, 4))
+f.suptitle('Valor Transações Nacionais', fontsize=14)
+
+sns.boxplot(x="nomeBandeira", y="valorTransacoesNacionais", data=dados,  ax=ax)
+ax.set_xlabel("Bandeira Cartao Credito",size = 12,alpha=0.8)
+ax.set_ylabel("Valor Transações Nacionais",size = 12,alpha=0.8)
+
